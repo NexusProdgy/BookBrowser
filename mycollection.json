@@ -1,0 +1,50 @@
+[
+    {
+        "title": "Red Rising",
+        "author": "Pierce Brown",
+        "publicationYear": "2014",
+        "genre": "Dystopian Fiction, Science Fiction",
+        "isRead": true,
+        "image": "http:\/\/localhost\/mysite\/redrising.jpg"
+    },
+    {
+        "title": "Spellmonger",
+        "author": "Terry Mancour",
+        "publicationYear": 2011,
+        "genre": "High Fantasy",
+        "isRead": true,
+        "image": "spellmonger.jpg"
+    },
+    {
+        "title": "The Will of the Many",
+        "author": "James Islington",
+        "publicationYear": 2023,
+        "genre": "Historical Fantasy",
+        "isRead": true,
+        "image": "twotm.jpg"
+    },
+    {
+        "title": "City of Thieves",
+        "author": "David Benioff",
+        "publicationYear": 2008,
+        "genre": "Historical Fiction",
+        "isRead": true,
+        "image": "cot.jpg"
+    },
+    {
+        "title": "Kingdoms of Death: Book Four of the Sun Eater Series",
+        "author": "Christopher Ruocchio",
+        "publicationYear": "2022",
+        "genre": "Science Fiction, Fantasy",
+        "isRead": false,
+        "image": "http:\/\/localhost\/mysite\/kod.jpg"
+    },
+    {
+        "title": "Dune",
+        "author": "Frank Herbert",
+        "publicationYear": "1965",
+        "genre": "Science Fiction",
+        "isRead": true,
+        "image": "dune.jpg"
+    }
+]

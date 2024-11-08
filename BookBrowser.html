@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Collection Editor</title>
+    <style>
+        #book-display {
+            text-align: center;
+			padding: 10px;
+			margin : 10px;
+        }
+        #book-image {
+            width: 150px;
+            height: auto;
+        }
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="book-display">
+    <h1>Book Browser</h1>
+    <label>Title: <input type="text" id="book-title" readonly></label><br>
+    <label>Author: <input type="text" id="book-author" readonly></label><br>
+    <label>Publication Year: <input type="number" id="book-publication-year" readonly></label><br>
+    <label>Genre: <input type="text" id="book-genre" readonly></label><br>
+    <label>Read: <input type="checkbox" id="book-is-read" disabled></label><br>
+    <img id="book-image" src="" alt="Book Cover"><br>
+    <span id="position-info"></span><br><br>
+
+    <button id="prev-btn">Previous</button>
+    <button id="edit-btn">Edit</button>
+    <button id="save-btn">Save</button>
+    <button id="save-all-btn">Save All</button>
+    <button id="delete-btn">Delete</button>
+    <button id="insert-btn">Insert</button>
+	<button id="next-btn">Next</button>
+</div>
+
+<script>
+    let currentIndex = 0;
+    let totalItems = 0; // Track total number of items
+
+    // Fetch total items count
+    function fetchTotalItems() {
+        fetch('GetTotalItems.php')
+            .then(response => response.json())
+            .then(data => {
+                totalItems = data.total || 0;
+                fetchItem(currentIndex);
+            })
+            .catch(error => console.error("Error fetching total items:", error));
+    }
+
+    // Fetch an item by index
+    function fetchItem(index) {
+        fetch(`GetItem.php?index=${index}`)
+            .then(response => response.json())
+            .then(book => {
+                if (book.error) {
+                    console.error(book.error);
+                } else {
+                    objectToForm(book);
+                    updatePositionInfo(index);
+                }
+            })
+            .catch(error => console.error("Error fetching item:", error));
+    }
+
+    function formToObject() {
+        return {
+            title: document.getElementById("book-title").value,
+            author: document.getElementById("book-author").value,
+            publicationYear: document.getElementById("book-publication-year").value,
+            genre: document.getElementById("book-genre").value,
+            isRead: document.getElementById("book-is-read").checked,
+            image: document.getElementById("book-image").src
+        };
+    }
+
+    function objectToForm(book) {
+        document.getElementById("book-title").value = book.title || "";
+        document.getElementById("book-author").value = book.author || "";
+        document.getElementById("book-publication-year").value = book.publicationYear || "";
+        document.getElementById("book-genre").value = book.genre || "";
+        document.getElementById("book-is-read").checked = book.isRead || false;
+        document.getElementById("book-image").src = book.image || "";
+    }
+
+    function toggleEdit() {
+        const readOnly = document.getElementById("book-title").readOnly;
+        ["book-title", "book-author", "book-publication-year", "book-genre"].forEach(id => {
+            document.getElementById(id).readOnly = !readOnly;
+        });
+        document.getElementById("book-is-read").disabled = !readOnly;
+    }
+
+    function saveItem() {
+        const book = formToObject();
+        fetch('SaveItem.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ index: currentIndex, data: book })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                console.log("Item saved successfully");
+            } else {
+                console.error(result.error);
+            }
+        })
+        .catch(error => console.error("Error saving item:", error));
+    }
+
+    function saveAll() {
+        fetch('SaveAll.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(books)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                console.log("All items saved to server.");
+            } else {
+                console.error(result.error);
+            }
+        })
+        .catch(error => console.error("Error saving all items:", error));
+    }
+
+    function insertItem() {
+        const newItem = { title: "", author: "", publicationYear: "", genre: "", isRead: false, image: "" };
+        currentIndex = totalItems;
+        totalItems++;
+        objectToForm(newItem);
+        updatePositionInfo(currentIndex);
+    }
+
+    function deleteItem() {
+        fetch(`DeleteItem.php?index=${currentIndex}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    totalItems--;
+                    currentIndex = (currentIndex > 0) ? currentIndex - 1 : 0;
+                    fetchItem(currentIndex);
+                } else {
+                    console.error(result.error);
+                }
+            })
+            .catch(error => console.error("Error deleting item:", error));
+    }
+
+    function updatePositionInfo(index) {
+        document.getElementById("position-info").textContent = `${index + 1}/${totalItems}`;
+    }
+
+    document.getElementById("prev-btn").addEventListener("click", function() {
+        currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalItems - 1;
+        fetchItem(currentIndex);
+    });
+
+    document.getElementById("next-btn").addEventListener("click", function() {
+        currentIndex = (currentIndex < totalItems - 1) ? currentIndex + 1 : 0;
+        fetchItem(currentIndex);
+    });
+
+    document.getElementById("edit-btn").addEventListener("click", toggleEdit);
+    document.getElementById("save-btn").addEventListener("click", saveItem);
+    document.getElementById("save-all-btn").addEventListener("click", saveAll);
+    document.getElementById("delete-btn").addEventListener("click", deleteItem);
+    document.getElementById("insert-btn").addEventListener("click", insertItem);
+
+    // Fetch total items and load the first item
+    fetchTotalItems();
+</script>
+
+</body>
+</html>
